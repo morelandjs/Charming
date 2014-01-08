@@ -1,0 +1,8 @@
+# parameter file for BC2Charm
+
+nevents = 2
+production_rate = 0.01
+mass = 1.35;
+species = 4;
+eta_min = -0.5
+eta_max = 0.5

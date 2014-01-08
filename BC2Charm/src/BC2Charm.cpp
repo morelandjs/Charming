@@ -7,13 +7,12 @@
 #include <cmath>
 #include <stdlib.h>
 #include <vector>
+#include "ParameterReader.h"
 
 using namespace std;
 
-bool sample_production()
+bool sample_production(double rate)
 {
-  double rate = 0.01;
-  double rand = drand48();
   if(drand48()<rate) return true;
   else return false;
 }
@@ -21,7 +20,7 @@ bool sample_production()
 double sample_pt()
 {
   ifstream ptfile;
-  ptfile.open("/home/jsm55/Research/Charming/BC2Charm/FONNL/FONNL.dat");
+  ptfile.open("/home/jsm55/Research/Charming/BC2Charm/src/FONNL/FONNL.dat");
   
   double sigma=0.0;
 
@@ -47,24 +46,28 @@ double sample_pt()
   return pt[ipt];
 }
 
-void histogram()
+void histogram(ParameterReader* _paraRdr)
 {
-  double mass = 1.35;
-  double eta_min = -0.5, eta_max = 0.5;
+  ParameterReader* paraRdr = _paraRdr;
+  double mass = paraRdr->getVal("mass");
+  double eta_min = paraRdr->getVal("eta_min");
+  double eta_max = paraRdr->getVal("eta_max");
 
   ifstream infile;
   ofstream outfile;
   outfile.open("/home/jsm55/Research/Charming/BC2Charm/data/histogram.dat",std::ios_base::trunc);
 
-  for(int i=0; i<1000; i++){
+  for(int i=0; i<1000000; i++){
     double pt = sample_pt();
     double phi = drand48()*2.0*M_PI;
     double eta = eta_min + drand48()*(eta_max-eta_min);
     double px = pt*cos(phi);
     double py = pt*sin(phi);
     double pz = pt*sinh(eta);
-    double E = pow(pow(pt*cosh(eta),2.0)+pow(mass,2.0),0.5);
+    double p = pow(px*px+py*py+pz*pz,0.5);
+    double E = pow(p*p+mass*mass,0.5);
     outfile << setprecision(12) << setw(20) << E 
+            << setprecision(12) << setw(20) << p 
 	    << setprecision(12) << setw(20) << px 
 	    << setprecision(12) << setw(20) << py  
 	    << setprecision(12) << setw(20) << pz  
@@ -73,11 +76,14 @@ void histogram()
   outfile.close();
 }
 
-void makeCharm()
+void makeCharm(ParameterReader* _paraRdr)
 {
-  int nevents = 2;
-  double mass = 1.35;
-  double eta_min = -0.5, eta_max = 0.5;
+  ParameterReader* paraRdr = _paraRdr;
+  int nevents = paraRdr->getVal("nevents");
+  double mass = paraRdr->getVal("mass");
+  double eta_min = paraRdr->getVal("eta_min");
+  double eta_max = paraRdr->getVal("eta_max");
+  double rate = paraRdr->getVal("production_rate");
 
   ifstream infile;
   ofstream outfile;
@@ -96,7 +102,7 @@ void makeCharm()
     do{	
       double xx, yy;
       infile >> xx >> yy;
-      if(sample_production()){ 
+      if(sample_production(rate)){ 
 	double pt = sample_pt();
 	double phi = drand48()*2.0*M_PI;
 	double eta = eta_min + drand48()*(eta_max-eta_min);
@@ -122,10 +128,17 @@ void makeCharm()
   }
 }
 
-int main()
+int main(int argc, char *argv[])
 {
-  //histogram();
-  makeCharm();
+  // read parameters
+  ParameterReader paraRdr;
+  paraRdr.readFromFile("/home/jsm55/Research/Charming/BC2Charm/src/parameters.dat");
+  paraRdr.readFromArguments(argc, argv);
+  cout << endl; paraRdr.echo();
+
+  // routines
+  //histogram(&paraRdr);
+  makeCharm(&paraRdr);
 
   return 0;
 }

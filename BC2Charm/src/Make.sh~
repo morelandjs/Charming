@@ -1,0 +1,2 @@
+g++ -c BC2Charm.cpp ParameterReader.cpp
+g++ -o BC2Charm.e BC2Charm.o ParameterReader.o
