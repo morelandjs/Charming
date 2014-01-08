@@ -47,11 +47,37 @@ double sample_pt()
   return pt[ipt];
 }
 
-int main()
+void histogram()
+{
+  double mass = 1.35;
+  double eta_min = -0.5, eta_max = 0.5;
+
+  ifstream infile;
+  ofstream outfile;
+  outfile.open("/home/jsm55/Research/Charming/BC2Charm/data/histogram.dat",std::ios_base::trunc);
+
+  for(int i=0; i<1000; i++){
+    double pt = sample_pt();
+    double phi = drand48()*2.0*M_PI;
+    double eta = eta_min + drand48()*(eta_max-eta_min);
+    double px = pt*cos(phi);
+    double py = pt*sin(phi);
+    double pz = pt*sinh(eta);
+    double E = pow(pow(pt*cosh(eta),2.0)+pow(mass,2.0),0.5);
+    outfile << setprecision(12) << setw(20) << E 
+	    << setprecision(12) << setw(20) << px 
+	    << setprecision(12) << setw(20) << py  
+	    << setprecision(12) << setw(20) << pz  
+	    << endl;
+  }
+  outfile.close();
+}
+
+void makeCharm()
 {
   int nevents = 2;
   double mass = 1.35;
-  double sqrt_s = 2760;
+  double eta_min = -0.5, eta_max = 0.5;
 
   ifstream infile;
   ofstream outfile;
@@ -73,16 +99,20 @@ int main()
       if(sample_production()){ 
 	double pt = sample_pt();
 	double phi = drand48()*2.0*M_PI;
+	double eta = eta_min + drand48()*(eta_max-eta_min);
 	double px = pt*cos(phi);
 	double py = pt*sin(phi);
-	double pz = pow(pow(sqrt_s/2.0,2.0)-pow(mass,2.0),0.5);
-	double E = pow(pow(px,2.0)+pow(py,2.0)+pow(pz,2.0)+pow(mass,2.0),0.5);
-	outfile << setprecision(5) << setw(5) << xx << "\t" 
-		<< setprecision(5) << setw(5) << yy << "\t" 
-		<< setprecision(12) << setw(12) << E << "\t" 
-		<< setprecision(12) << setw(12) << px << "\t" 
-		<< setprecision(12) << setw(12) << py << "\t" 
-		<< setprecision(12) << setw(12) << pz << "\t" 
+	double pz = pt*sinh(eta);
+	double p = pow(px*px+py*py+pz*pz,0.5);
+	double E = pow(p*p+mass*mass,0.5);
+	outfile << setprecision(5) << setw(13) << 0.0  
+	        << setprecision(5) << setw(13) << xx  
+		<< setprecision(5) << setw(13) << yy 
+	        << setprecision(5) << setw(13) << 0.0
+		<< setprecision(12) << setw(20) << E 
+		<< setprecision(12) << setw(20) << px 
+		<< setprecision(12) << setw(20) << py  
+		<< setprecision(12) << setw(20) << pz  
 		<< endl;
       }
     }
@@ -90,6 +120,12 @@ int main()
     infile.close();
     outfile.close();
   }
+}
 
-return 0;
+int main()
+{
+  //histogram();
+  makeCharm();
+
+  return 0;
 }
